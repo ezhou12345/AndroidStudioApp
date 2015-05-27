@@ -1,0 +1,11 @@
+# The exploration_mode parameter can take on the values: 
+#  greedy, epsilon-greedy, soft-max, stochastic
+
+EXPLORATION_MODE=epsilon-greedy
+EXPLORATION_PARAMETER=0.1
+
+                ACCEPT     EXPL_CONF     IMPL_CONF
+INACTIVE            1          -             -
+CONFIDENT           1          10             -
+UNCONFIDENT         1          10             -
+GROUNDED            1          10             -

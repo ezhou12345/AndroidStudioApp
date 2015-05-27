@@ -1,0 +1,11 @@
+# This file defines the dialog states for the DM. This file is optional; if 
+# the dialog states are not defined, the DM will use the name of the 
+# focused agent as the name of the state. If this file is linked in the
+# DM configuration (by dialog_states_file=...), then the state name will
+# be determined by matching the name of the focused agent to the list 
+# below; when a match is not found, the state is set to _unknown_
+
+# The entries below are in the form: AgentName=StateName
+# The entries are case-sensitive.
+
+# HowMayIHelpYou=start_up

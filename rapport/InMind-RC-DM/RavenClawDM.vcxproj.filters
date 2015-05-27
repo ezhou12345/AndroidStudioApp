@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9f3c95a2-3ba4-446f-96c4-ef8c7b0e092a}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm</Extensions>
+    </Filter>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{3f7f6070-aeec-4162-96a5-91de27e51ece}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DialogTask.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DateUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParseTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BindingFilters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="expl.pol">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="expl_impl.pol">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="generic.pol">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="grounding.policies">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="RavenClaw.cfg">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="request_default.pol">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="request_numnonu.pol">
+      <Filter>Configuration</Filter>
+    </None>
+  </ItemGroup>
+</Project>

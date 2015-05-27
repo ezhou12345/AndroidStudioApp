@@ -1,0 +1,58 @@
+<!--
+  Copyright 2013 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+
+<resources>
+    <string name="app_name">News Reader API</string>
+    <string name="app_login">Login</string>
+    <string name="app_action_settings">Settings</string>
+    <string name="app_action_settings_2">Settings</string>
+    <string name="app_default_reader">Default Reader</string>
+    <string name="app_extended_reader">Extended Reader</string>
+    <string name="app_modified_news">Modified News</string>
+    <string name="app_list_news_items">List news articles</string>
+    <string name="app_custom_reader_layout">Customized Layout</string>
+    <string name="app_navigation_drawer_open">Open navigation drawer</string>
+    <string name="app_navigation_drawer_close">Close navigation drawer</string>
+    <string name="app_exit">Exit</string>
+    <string name="app_exit_action">Exit</string>
+    <string name="app_news_summary_list">News Articles List</string>
+    <string name="app_user_profile">User Profile</string>
+    <string name="app_filtered_news">Filtered News</string>
+    <string name="app_news_commands">News Commands</string>
+    <string name="title_activity_commands">CommandsActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_example">Example action</string>
+    <string name="title_activity_prueba_fragment">PruebaFragment</string>
+    <string name="title_activity_graph">GraphActivity</string>
+    <string name="app_behavior_orchestration">Behavior Orchestration</string>
+    <string name="app_feedback">News Feedback</string>
+    <string name="title_activity_audio_record">AudioRecordActivity</string>
+    <string name="app_audio_start">Start</string>
+    <string name="app_audio_stopt">Stop</string>
+    <string name="app_audio_record">Audio Record</string>
+    <string name="app_upload_image">Upload image</string>
+    <string name="app_emma_recommendation">Emma\'s RS</string>
+    <string name="app_william_recommendation">William\'s RS</string>
+    <string name="app_merged_rankings">Merging Rankings</string>
+
+</resources>

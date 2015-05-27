@@ -1,0 +1,13 @@
+# The exploration_mode parameter can take on the values: 
+#  greedy, epsilon-greedy, soft-max, stochastic
+
+EXPLORATION_MODE=stochastic
+EXPLORATION_PARAMETER=0.1
+
+                			FAIL_REQUEST   NO_ACTION     ASK_REPEAT    ASK_REPHRASE    REPEAT_PROMPT    NOTIFY_AND_EXPLAIN_MORE   NOTIFY_AND_FULL_HELP   NOTIFY_AND_WHAT_CAN_I_SAY   NOTIFY_AND_TERSE_WHAT_CAN_I_SAY    NOTIFY_NONUNDERSTANDING    TIPS_AND_WHAT_CAN_I_SAY
+FAILED				             10              -             -               -               -                    -                          -                      -                            -                                -						 -
+UNDERSTANDING					  -             10             -               -               -                    -                          -                      -                            -                                -						 -
+VERY_FIRST_NONUNDERSTANDING       -              -             -               -               -                    -                          -                      -                            -                                -						10
+NONUNDERSTANDING_1     			  -              -             -               -               -                    -                          -                      -                           10                                -						 -
+NONUNDERSTANDING_2     			  -              -             -               -               -                    -                          -                     10                            -                                -						 -
+NONUNDERSTANDING_MORE		      -              -             -               -               -                    -                         10                      -                            -                                -						 -

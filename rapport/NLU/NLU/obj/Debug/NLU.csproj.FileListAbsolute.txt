@@ -1,0 +1,14 @@
+c:\users\apapa\documents\visual studio 2013\Projects\NLU\NLU\bin\Debug\NLU.exe.config
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\NLU.exe
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\NLU.pdb
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\obj\Debug\NLU.csprojResolveAssemblyReference.cache
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\obj\Debug\NLU.exe
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\obj\Debug\NLU.pdb
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\vhmsg-net.dll
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\Apache.NMS.dll
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\Apache.NMS.ActiveMQ.dll
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\Ionic.Zlib.dll
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\vhmsg-net.pdb
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\vhmsg-net.xml
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\Apache.NMS.pdb
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\NLU\NLU\bin\Debug\Apache.NMS.ActiveMQ.pdb

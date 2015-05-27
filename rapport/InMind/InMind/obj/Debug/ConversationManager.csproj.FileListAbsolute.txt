@@ -1,0 +1,16 @@
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\InMind.exe.config
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\InMind.exe
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\InMind.pdb
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\Apache.NMS.ActiveMQ.dll
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\Apache.NMS.dll
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\GlobalData.exe
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\vhmsg-net.dll
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\Ionic.Zlib.dll
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\GlobalData.pdb
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\Apache.NMS.pdb
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\Apache.NMS.ActiveMQ.pdb
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\vhmsg-net.pdb
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\bin\Debug\vhmsg-net.xml
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\obj\Debug\ConversationManager.csprojResolveAssemblyReference.cache
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\obj\Debug\InMind.exe
+C:\Users\apapa\documents\visual studio 2013\Projects\InMind\InMind\obj\Debug\InMind.pdb

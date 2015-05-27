@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\org.apache.httpcomponents\httpclient-android\4.3.5\82edcaec6c7b4599eaeaaf11167ceea41db42f33\httpclient-android-4.3.5.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="82edcaec6c7b4599eaeaaf11167ceea41db42f33">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\httpclient-android-4.3.5-e0ca451e19d6f813c705c8001298a9c6023e0f0b.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\InMind\InMindApp\app\build\intermediates\exploded-aar\InMindApp\news\unspecified\libs\external_android-flip.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="ef481ace9d4312bcd35a09cbc8b7949ff4782d2e">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\external_android-flip-49adaa114250e0c93e90797c12809c732ff6e62d.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\uk.com.robust-it\cloning\1.9.2\cd49306bc364d5c5e2edcd244d38ead53616b02d\cloning-1.9.2.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="cd49306bc364d5c5e2edcd244d38ead53616b02d">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\cloning-1.9.2-15c25165f3be657c4d58b1e2138f2ea86e3da9cf.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\InMind\InMindApp\app\build\intermediates\exploded-aar\InMindApp\middleware\unspecified\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="34df19cc255dd66507c32fd110e43b59b7696ab8">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\classes-b29ff53defdebc0a56a4d8d715d86d781111de96.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\InMind\InMindApp\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\21.0.3\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="81d42bf983a8741f4888a6e333e454e4a5e0eeb7">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\classes-0a82d48504312cd176288e1d9526cd9562f25080.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\InMind\InMindApp\app\build\intermediates\exploded-aar\InMindApp\commons\unspecified\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="f7b209b394fafbb7499eff85336ea1ec7a63a561">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\classes-cef7a966170c224adae9b4ecb40f143c923f9f57.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\org.apache.httpcomponents\httpmime\4.3.5\1dd0d38df9c6d21e893f2e52403f1cd99e91cd81\httpmime-4.3.5.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="1dd0d38df9c6d21e893f2e52403f1cd99e91cd81">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\httpmime-4.3.5-0e96fc20c4206dd1b12939dfd2daa638e2c2a120.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\com.mcxiaoke.volley\library\1.0.16\d8f5b9114ebe0f76de7fbf55e950540959ce4ff8\library-1.0.16.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="d8f5b9114ebe0f76de7fbf55e950540959ce4ff8">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\library-1.0.16-3ad90cb0685d1d8d6366f868700080dd21646f78.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\InMind\InMindApp\app\build\intermediates\exploded-aar\InMindApp\news\unspecified\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="676e0c76eb5ad07eb474d5a07137560d70698997">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\classes-7eedaa498159acbce7b66e126f361ce869fc6ee3.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\com.loopj.android\android-async-http\1.4.5\77bf7cacf9cefe19dc105e5425d2eb1bb5285881\android-async-http-1.4.5.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="77bf7cacf9cefe19dc105e5425d2eb1bb5285881">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\android-async-http-1.4.5-e6f1327e808ae5986333372b9198fd30909e0727.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\com.goebl\david-webb\1.1.0\219dccc05b9bd4cb17e5bcdb51879b8c2091560b\david-webb-1.1.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="219dccc05b9bd4cb17e5bcdb51879b8c2091560b">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\david-webb-1.1.0-edfcf469c5f0b5ef0fa82ce410c784a577b8923f.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\com.google.code.gson\gson\2.3.1\ecb6e1f8e4b0e84c4b886c2f14a1500caf309757\gson-2.3.1.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="ecb6e1f8e4b0e84c4b886c2f14a1500caf309757">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\gson-2.3.1-35606c776aeab52b40ac021f6bca2cf7785e872e.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\com.google.guava\guava\18.0\cce0823396aa693798f8882e64213b1772032b09\guava-18.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="cce0823396aa693798f8882e64213b1772032b09">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\guava-18.0-6849400e034fcd758081e300576d8ca4b5687215.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\InMind\InMindApp\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\classes-3084d021f6e4ab6e416e4ea4277d0418d6086d23.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\AppData\Local\Android\Sdk\extras\android\m2repository\com\android\support\support-annotations\21.0.3\support-annotations-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\support-annotations-21.0.3-3b1bf5ca8ced546ba433b91bd78b3bf59b016e66.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\org.objenesis\objenesis\2.1\87c0ea803b69252868d09308b4618f766f135a96\objenesis-2.1.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="87c0ea803b69252868d09308b4618f766f135a96">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\objenesis-2.1-4108c7a9494d32e47a0b018e2d7ef747127aa580.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\com.googlecode.json-simple\json-simple\1.1.1\c9ad4a0850ab676c5c64461a05ca524cdfff59f1\json-simple-1.1.1.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="c9ad4a0850ab676c5c64461a05ca524cdfff59f1">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\json-simple-1.1.1-718e05cc566181ba72ebeea2ae997deb614462fb.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\InMind\InMindApp\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\libs\internal_impl-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\internal_impl-21.0.3-db976a777557771671e657370caffc704f4729a3.jar" />
+    </item>
+    <item
+        jar="C:\Users\emily\.gradle\caches\modules-2\files-2.1\commons-codec\commons-codec\1.6\b7f0fc8f61ecadeb3695f0b9464755eee44374d4\commons-codec-1.6.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="b7f0fc8f61ecadeb3695f0b9464755eee44374d4">
+        <dex dex="C:\Users\emily\InMind\InMindApp\app\build\intermediates\pre-dexed\debug\commons-codec-1.6-110a3a20f9f71e9d81f2c110df2f03ab0c3731fd.jar" />
+    </item>
+
+</items>

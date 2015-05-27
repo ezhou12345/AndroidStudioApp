@@ -1,0 +1,51 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 21 //'android-L'
+    buildToolsVersion "21.1.2"
+
+    defaultConfig {
+        minSdkVersion 17
+        targetSdkVersion 21
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile project(':commons')
+    compile('com.android.support:appcompat-v7:21.0.+') {
+        transitive = true
+    }
+    compile('commons-codec:commons-codec:1.6') {
+        transitive = true
+    }
+    compile('com.googlecode.json-simple:json-simple:1.1.1') {
+        exclude module: 'junit'
+        transitive = true
+    }
+    compile('com.google.guava:guava:18.0') {
+        transitive = true
+    }
+    //        compile ('de.greenrobot:eventbus:2.+'){
+    //        transitive = true
+    //    }
+    //        compile ('org.apache.httpcomponents:httpcore:4.3.2'){
+    //        transitive = true
+    //    }
+    // compile files('libs/unity-classes.jar')
+    //compile fileTree(dir: 'libs', include: '*.jar')
+    //compile fileTree(dir: 'libs', include: ['UnityPlayerNativeActivity'])
+    // compile project(':sbmjni')
+}

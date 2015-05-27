@@ -1,0 +1,897 @@
+//=============================================================================
+//
+//   Copyright (c) 2000-2007, Carnegie Mellon University.
+//   All rights reserved.
+//
+//   Redistribution and use in source and binary forms, with or without
+//   modification, are permitted provided that the following conditions
+//   are met:
+//
+//   1. Redistributions of source code must retain the above copyright
+//      notice, this list of conditions and the following disclaimer.
+//
+//   2. Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in
+//      the documentation and/or other materials provided with the
+//      distribution.
+//
+//   This work was supported in part by funding from the Defense Advanced
+//   Research Projects Agency and the National Science Foundation of the
+//   United States of America, and the CMU Sphinx Speech Consortium.
+//
+//   THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+//   ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+//   THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+//   PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+//   NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+//   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+//   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+//   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+//   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+//   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+//   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+//=============================================================================
+
+#include "DialogTask.h"
+#include "DateUtil.h"
+#include "StringUtil.h"
+#include "BindingFilters.h"
+
+#define __IN_DIALOGTASK__
+
+//-----------------------------------------------------------------------------
+//
+// DM GALAXY SERVER CONFIGURATION
+//
+//-----------------------------------------------------------------------------
+#ifdef GALAXY
+    DMSERVER_CONFIGURATION("DialogManager", 17000)
+#endif
+
+//-----------------------------------------------------------------------------
+//
+// CONSTANT DEFINITIONS
+//
+//-----------------------------------------------------------------------------
+
+#include "Constants.h"
+
+//-----------------------------------------------------------------------------
+//
+// CUSTOM MACROS
+//
+//-----------------------------------------------------------------------------
+
+#define REQUEST_CONCEPT_AFTER_CLEAR(x)  \
+    ON_INITIALIZATION(                  \
+        C(#x).Clear();                  \
+    )                                   \
+    REQUEST_CONCEPT(x)
+
+#define DATE_NUM(x) (date2num((int)C(#x".year"), (int)C(#x".month"), (int)C(#x".day")))
+#define TIME_NUM(x) ((int)C(#x".hour") * 100 + (int)C(#x".minute"))
+#define DATE_TIME_NUM(x) ((long long)DATE_NUM(x) + TIME_NUM(x))
+
+//-----------------------------------------------------------------------------
+//
+// DIALOG CORE CONFIGURATION
+//
+//-----------------------------------------------------------------------------
+
+CORE_CONFIGURATION(
+
+    // declare the NLG and the GUI as output devices
+    USE_OUTPUT_DEVICES(
+        DEFAULT_OUTPUT_DEVICE("nlg", "nlg.launch_query", 1)
+    )
+
+    USE_BINDING_FILTERS(
+        BINDING_FILTER("DateTime", DateTimeBindingFilter)
+        BINDING_FILTER("Location", LocationBindingFilter)
+        BINDING_FILTER("DoorNumber", DoorNumberBindingFilter)
+    )
+)
+
+//-----------------------------------------------------------------------------
+//
+// CONCEPT TYPES DEFINITION
+//
+//-----------------------------------------------------------------------------
+
+// DateTime struct
+DEFINE_STRUCT_CONCEPT_TYPE( CDateTimeConcept,
+    ITEMS(
+        INT_ITEM(year)
+        INT_ITEM(month)
+        INT_ITEM(day)
+        INT_ITEM(hour)
+        INT_ITEM(minute)
+        INT_ITEM(period_of_day)
+        INT_ITEM(date_status)
+        INT_ITEM(time_status)
+    )
+)
+
+// Location Construct
+DEFINE_STRUCT_CONCEPT_TYPE( CLocationConcept,
+    ITEMS(
+        STRING_ITEM(building)
+        STRING_ITEM(door_number)
+        INT_ITEM(digits)     // Number of digits of door number of this building
+    )
+)
+
+// Event frame
+DEFINE_FRAME_CONCEPT_TYPE( CEventConcept,
+    ITEMS(
+        STRING_ITEM(type)
+        CUSTOM_ITEM(start, CDateTimeConcept)
+        CUSTOM_ITEM(end, CDateTimeConcept)
+        CUSTOM_ITEM(location, CLocationConcept)
+        STRING_ITEM(people)
+    )
+)
+
+// Event array
+DEFINE_ARRAY_CONCEPT_TYPE(CEventConcept, CArrayEventConcept)
+
+//-----------------------------------------------------------------------------
+//
+// AGENT SPECIFICATIONS
+//
+//-----------------------------------------------------------------------------
+
+// /Calendar
+DEFINE_AGENCY( CCalendar,
+    IS_MAIN_TOPIC()
+    DEFINE_SUBAGENTS(
+        SUBAGENT(GreetWelcome, CGreetWelcome, "")
+        SUBAGENT(PerformTask, CPerformTask, "")
+        SUBAGENT(GreetGoodbye, CGreetGoodbye, "")
+    )
+)
+
+// /Calendar/GreetWelcome
+DEFINE_INFORM_AGENT( CGreetWelcome,
+    PROMPT(":non-listening inform welcome")
+)
+
+// /Calendar/PerformTask
+DEFINE_AGENCY( CPerformTask,
+    DEFINE_CONCEPTS(
+        INT_USER_CONCEPT(task_type, "")
+        // For global communication when validating dates and times
+        STRING_SYSTEM_CONCEPT(name_of_dt_to_validate)
+        STRING_SYSTEM_CONCEPT(desc_of_dt_to_validate)
+        CUSTOM_SYSTEM_CONCEPT(first_dt, CDateTimeConcept)
+        CUSTOM_SYSTEM_CONCEPT(other_dt, CDateTimeConcept)
+    )
+    DEFINE_SUBAGENTS(
+        SUBAGENT(RequestTaskType, CRequestTaskType, "")
+        SUBAGENT(PerformCreate, CPerformCreate, "")
+        SUBAGENT(PerformQuery, CPerformQuery, "")
+        SUBAGENT(PerformModify, CPerformModify, "")
+        SUBAGENT(PerformDelete, CPerformDelete, "")
+        SUBAGENT(RequestTaskTypeAgain, CRequestTaskTypeAgain, "")
+    )
+    SUCCEEDS_WHEN(
+        (COMPLETED(RequestTaskType) || COMPLETED(RequestTaskTypeAgain)) && (int)C("task_type") == TASK_GOODBYE
+    )
+)
+
+// /Calendar/PerformTask/RequestTaskType
+DEFINE_REQUEST_AGENT( CRequestTaskType,
+    INPUT_LINE_CONFIGURATION("set_lm=TaskType")
+    PRECONDITION(!AVAILABLE(task_type))
+    PROMPT(":non-listening request task_type")
+    REQUEST_CONCEPT(task_type)      // Mustn't use REQUEST_CONCEPT_AFTER_CLEAR because the precondition depends on the concept
+    GRAMMAR_MAPPING(mysprintf("![Create]>%d, ![Query]>%d, ![Modify]>%d, ![Delete]>%d, ![Goodbye]>%d",
+                              TASK_CREATE, TASK_QUERY, TASK_MODIFY, TASK_DELETE, TASK_GOODBYE))
+)
+
+//-----------------------------------------------------------------------------
+//
+// CREATE START
+//
+//-----------------------------------------------------------------------------
+
+// /Calendar/PerformTask/PerformCreate
+DEFINE_AGENCY( CPerformCreate,
+    PRECONDITION((int)C("task_type") == TASK_CREATE)
+    DEFINE_CONCEPTS(
+        CUSTOM_USER_CONCEPT(event, CEventConcept, "")
+        BOOL_SYSTEM_CONCEPT(tied_date)      // When user specifies only the starting date or the ending date,
+                                            //   assume the other date is the same and set this to true
+    )
+    ON_INITIALIZATION(
+        C("event").Clear();
+        C("tied_date") = false;
+    )
+    DEFINE_SUBAGENTS(
+        SUBAGENT(RequestEventType, CRequestEventType, "")
+        SUBAGENT(HelpEventType, CHelpEventType, "")
+        SUBAGENT(RequestPeople, CRequestPeople, "")
+        SUBAGENT(RequestStartDateTime, CRequestStartDateTime, "")
+        SUBAGENT(ValidateStartDate, CValidateStartDate, "")
+        SUBAGENT(ValidateStartTime, CValidateStartTime, "")
+        SUBAGENT(RequestEndDateTime, CRequestEndDateTime, "")
+        SUBAGENT(ValidateEndDate, CValidateEndDate, "")
+        SUBAGENT(ValidateEndTime, CValidateEndTime, "")
+        SUBAGENT(RequestLocation, CRequestLocation, "")
+        SUBAGENT(RequestDoorNumber, CRequestDoorNumber, "")
+        SUBAGENT(ExpectPeople, CExpectPeople, "")
+        SUBAGENT(ExpectStartDateTime, CExpectStartDateTime, "")
+        SUBAGENT(ExpectEndDateTime, CExpectEndDateTime, "")
+        SUBAGENT(ExpectLocation, CExpectLocation, "")
+        SUBAGENT(ConfirmCreate, CConfirmCreate, "")
+        SUBAGENT(ExecuteCreate, CExecuteCreate, "")
+        SUBAGENT(InformCreateDone, CInformCreateDone, "")
+    )
+    SUCCEEDS_WHEN(
+        COMPLETED(InformCreateDone)
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/RequestEventType
+DEFINE_REQUEST_AGENT( CRequestEventType,
+    INPUT_LINE_CONFIGURATION("set_lm=EventType")
+    PROMPT(":non-listening request event_type <task_type")
+    REQUEST_CONCEPT(event.type)
+    GRAMMAR_MAPPING("![EventType], ![Help]>HELP")
+)
+
+// /Calendar/PerformTask/PerformCreate/HelpEventType
+DEFINE_INFORM_AGENT( CHelpEventType,
+    PRECONDITION((string)C("event.type") == "HELP")
+    PROMPT(":non-listening inform help_event_type")
+    ON_COMPLETION(
+        C("event.type").Clear();
+        A("../RequestEventType").ReOpenTopic();
+        ReOpenTopic();
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/RequestPeople
+DEFINE_REQUEST_AGENT( CRequestPeople,
+    INPUT_LINE_CONFIGURATION("set_lm=People")
+    PRECONDITION(!AVAILABLE(event.people))
+    PROMPT(":non-listening request people <event")
+    REQUEST_CONCEPT(event.people)
+    GRAMMAR_MAPPING("![People], ![No]>NO")
+)
+
+// /Calendar/PerformTask/PerformCreate/RequestStartDateTime
+DEFINE_REQUEST_AGENT( CRequestStartDateTime,
+    INPUT_LINE_CONFIGURATION("set_lm=StartDateTime")
+    PRECONDITION(!AVAILABLE(event.start))
+    PROMPT(":non-listening request start_date_time <event")
+    REQUEST_CONCEPT(event.start)
+    GRAMMAR_MAPPING("![DateTime]>:DateTime")
+)
+
+// /Calendar/PerformTask/PerformCreate/ValidateStartDate
+DEFINE_AGENCY( CValidateStartDate,
+    DEFINE_SUBAGENTS(
+        SUBAGENT(DisambiguateStartDate, CDisambiguateStartDate, "")
+        SUBAGENT(DisambiguateGeneralDate, CDisambiguateGeneralDate, "")
+        SUBAGENT(RequestNewDate, CRequestNewDate, "")
+    )
+    SUCCEEDS_WHEN(
+        COMPLETED(RequestNewDate) || (int)C("event.start.date_status") == DT_OKAY
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/ValidateStartDate/DisambiguateStartDate
+DEFINE_EXECUTE_AGENT( CDisambiguateStartDate,
+    EXECUTE(
+        // If end date is available, it may help disambiguate start date
+        if (AVAILABLE(event.end)) {
+            if ((int)C("event.start.date_status") == DT_MISSING) {
+                C("tied_date") = true;
+                if ((int)C("event.end.date_status") != DT_MISSING) {
+                    C("event.start.year") = (int)C("event.end.year");
+                    C("event.start.month") = (int)C("event.end.month");
+                    C("event.start.day") = (int)C("event.end.day");
+                    C("event.start.date_status") = (int)C("event.end.date_status");
+                }
+            }
+            if ((int)C("event.start.date_status") == DT_AMBIGUOUS) {                   // disambiguate start date with end date if possible
+                int date1 = DATE_NUM(event.start);
+                int date2 = DATE_NUM(event.end);
+                if ((int)C("event.end.date_status") == DT_OKAY && date2 - date1 < 7) {  // start date can be disambiguated
+                    C("event.start.date_status") = DT_OKAY;
+                }
+                else if ((int)C("event.end.date_status") == DT_AMBIGUOUS && date1 > date2) {    // both can be disambiguated: start unchanged, end += 7
+                    int year; int month; int day;               // STRANGE: writing "int year, month, day;" produces strange bugs -- comma problem?
+                    num2date(date2 + 7, year, month, day);
+                    C("event.end.year") = year;
+                    C("event.end.month") = month;
+                    C("event.end.day") = day;
+                    C("event.start.date_status") = DT_OKAY;
+                    C("event.end.date_status") = DT_OKAY;
+                }
+            }
+        }
+        // Prepare for general validation
+        C("name_of_dt_to_validate") = "event.start";
+        C("desc_of_dt_to_validate") = IS_TRUE(tied_date) ? "" : "starting";
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/ValidateStartTime
+DEFINE_AGENCY( CValidateStartTime,
+    DEFINE_SUBAGENTS(
+        SUBAGENT(DisambiguateStartTime, CDisambiguateStartTime, "")
+        SUBAGENT(DisambiguateGeneralTime, CDisambiguateGeneralTime, "")
+        SUBAGENT(RequestNewTime, CRequestNewTime, "")
+    )
+    SUCCEEDS_WHEN(
+        COMPLETED(RequestNewTime) || (int)C("event.start.time_status") == DT_OKAY
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/ValidateStartTime/DisambiguateStartTime
+DEFINE_EXECUTE_AGENT( CDisambiguateStartTime,
+    EXECUTE(
+        // If end date time is available, it may help disambiguate start time
+        if (AVAILABLE(event.end)) {
+            if (IS_TRUE(tied_date) || (int)C("event.start.date_status") == DT_OKAY &&
+                                      (int)C("event.end.date_status") == DT_OKAY &&
+                                      DATE_NUM(event.start) == DATE_NUM(event.end)) {     // same date, disambiguate time
+                if ((int)C("event.start.time_status") == DT_AMBIGUOUS) {
+                    if ((int)C("event.end.time_status") == DT_OKAY) {
+                        if ((int)C("event.end.period_of_day") == PoD_NONE) {   // 24-hr notations, assume the same for start time as well (e.g. from ten to thirteen)
+                            C("event.start.time_status") = DT_OKAY;
+                        }
+                        else {  // Assume same period of day for start and end time, which means make start time the nearer one before end time (e.g from two to three p m)
+                            if (TIME_NUM(event.start) + 1200 < TIME_NUM(event.end)) {
+                                C("event.start.hour") = (int)C("event.start.hour") + 12;
+                            }
+                        }
+                        C("event.start.time_status") = DT_OKAY;
+                    }
+                    else if ((int)C("event.end.time_status") == DT_AMBIGUOUS && TIME_NUM(event.start) >= TIME_NUM(event.end)) {
+                        // Although both are ambiguous, the order disambiguates both (e.g. from ten to one)
+                        C("event.end.hour") = (int)C("event.end.hour") + 12;
+                        C("event.start.time_status") = DT_OKAY;
+                        C("event.end.time_status") = DT_OKAY;
+                    }
+                }
+            }
+        }
+        // Prepare for general validation
+        C("name_of_dt_to_validate") = "event.start";
+        C("desc_of_dt_to_validate") = "starting";
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/RequestEndDateTime
+DEFINE_REQUEST_AGENT( CRequestEndDateTime,
+    INPUT_LINE_CONFIGURATION("set_lm=EndDateTime")
+    PRECONDITION(!AVAILABLE(event.end))
+    PROMPT(":non-listening request end_date_time <event")
+    REQUEST_CONCEPT(event.end)
+    GRAMMAR_MAPPING("![DateTime]>:DateTime")
+)
+
+// /Calendar/PerformTask/PerformCreate/ValidateEndDate
+DEFINE_AGENCY( CValidateEndDate,
+    DEFINE_SUBAGENTS(
+        SUBAGENT(DisambiguateEndDate, CDisambiguateEndDate, "")
+        SUBAGENT(DisambiguateGeneralDate, CDisambiguateGeneralDate, "")
+        SUBAGENT(RequestNewDate, CRequestNewDate, "")
+        SUBAGENT(CheckDateOrder, CCheckDateOrder, "")
+    )
+    SUCCEEDS_WHEN(
+        COMPLETED(CheckDateOrder) && (int)C("event.end.date_status") == DT_OKAY
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/ValidateEndDate/DisambiguateEndDate
+DEFINE_EXECUTE_AGENT( CDisambiguateEndDate,
+    EXECUTE(
+        // If dates are tied, or end date is missing, copy start date to end date
+        if (IS_TRUE(tied_date) || (int)C("event.end.date_status") == DT_MISSING) {
+            C("event.end.year") = (int)C("event.start.year");
+            C("event.end.month") = (int)C("event.start.month");
+            C("event.end.day") = (int)C("event.start.day");
+            C("event.end.date_status") = (int)C("event.start.date_status");
+        }
+        // If end date is ambiguous, see if the start date can disambiguate it
+        if ((int)C("event.end.date_status") == DT_AMBIGUOUS) {
+            int date1 = DATE_NUM(event.start);
+            int date2 = DATE_NUM(event.end);
+            if (date2 < date1) {
+                int year; int month; int day;           // STRANGE: writing "int year, month, day;" produces strange bugs -- comma problem?
+                num2date(date2 + 7, year, month, day);
+                C("event.end.year") = year;
+                C("event.end.month") = month;
+                C("event.end.day") = day;
+                C("event.end.date_status") = DT_OKAY;
+            }
+        }
+        // Prepare for general validation
+        C("name_of_dt_to_validate") = "event.end";
+        C("desc_of_dt_to_validate") = "ending";
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/CheckDateOrder
+DEFINE_EXECUTE_AGENT( CCheckDateOrder,
+    EXECUTE(
+        if ((int)C("event.end.date_status") == DT_OKAY && DATE_NUM(event.start) > DATE_NUM(event.end)) {
+            C("event.end.date_status") = DT_WRONG_ORDER;
+            A("..").ReOpenTopic();
+        }
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/ValidateEndTime
+DEFINE_AGENCY( CValidateEndTime,
+    DEFINE_SUBAGENTS(
+        SUBAGENT(DisambiguateEndTime, CDisambiguateEndTime, "")
+        SUBAGENT(DisambiguateGeneralTime, CDisambiguateGeneralTime, "")
+        SUBAGENT(RequestNewTime, CRequestNewTime, "")
+        SUBAGENT(CheckTimeOrder, CCheckTimeOrder, "")
+    )
+    SUCCEEDS_WHEN(
+        COMPLETED(CheckTimeOrder) && (int)C("event.end.time_status") == DT_OKAY
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/ValidateEndTime/DisambiguateEndTime
+DEFINE_EXECUTE_AGENT( CDisambiguateEndTime,
+    EXECUTE(
+        // If start and end are the same date, and end time is ambiguous, assume earliest ending time possible
+        if ((int)C("event.start.date_status") == DT_OKAY && (int)C("event.end.date_status") == DT_OKAY &&
+                    DATE_NUM(event.start) == DATE_NUM(event.end) && (int)C("event.end.time_status") == DT_AMBIGUOUS) {
+            if (TIME_NUM(event.start) >= TIME_NUM(event.end)) {
+                C("event.end.hour") = (int)C("event.end.hour") + 12;
+            }
+            C("event.end.time_status") = DT_OKAY;
+        }
+        // Prepare for general validation
+        C("name_of_dt_to_validate") = "event.end";
+        C("desc_of_dt_to_validate") = "ending";
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/CheckTimeOrder
+DEFINE_EXECUTE_AGENT( CCheckTimeOrder,
+    EXECUTE(
+        if ((int)C("event.end.time_status") == DT_OKAY && DATE_NUM(event.start) == DATE_NUM(event.end)
+                                                       && TIME_NUM(event.start) > TIME_NUM(event.end)) {    // Let's just allow identical start and end times
+            C("event.end.time_status") = DT_WRONG_ORDER;
+            A("..").ReOpenTopic();
+        }
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/RequestLocation
+DEFINE_REQUEST_AGENT( CRequestLocation,
+    INPUT_LINE_CONFIGURATION("set_lm=Location")
+    PRECONDITION(!AVAILABLE(event.location))
+    PROMPT(":non-listening request location <event")
+    REQUEST_CONCEPT(event.location)
+    GRAMMAR_MAPPING("![Location]>:Location, ![No]>:Location")
+)
+
+// /Calendar/PerformTask/PerformCreate/RequestDoorNumber
+DEFINE_REQUEST_AGENT( CRequestDoorNumber,
+    INPUT_LINE_CONFIGURATION("set_lm=DoorNumber")
+    PRECONDITION((string)C("event.location.door_number") == LOC_MISSING)
+    DEFINE_CONCEPTS(
+        STRING_USER_CONCEPT(door_number, "")
+    )
+    PROMPT(":non-listening request door_number <event")
+    REQUEST_CONCEPT_AFTER_CLEAR(door_number)
+    GRAMMAR_MAPPING("![DoorNumber]>:DoorNumber, ![No]>:DoorNumber")
+    ON_COMPLETION(
+        if ((string)C("door_number") == LOC_NONE || ((string)C("door_number")).length() == (int)C("event.location.digits")) {
+            C("event.location.door_number") = C("door_number");
+        }
+        else {
+            ReOpenTopic();
+        }
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/ExpectPeople
+DEFINE_EXPECT_AGENT( CExpectPeople,
+    EXPECT_WHEN(!AVAILABLE(event.people))
+    EXPECT_CONCEPT(event.people)
+    GRAMMAR_MAPPING("@(../RequestEventType)[EventTypeAgent.WithPeople.People]")
+)
+
+// /Calendar/PerformTask/PerformCreate/ExpectStartDateTime
+DEFINE_EXPECT_AGENT( CExpectStartDateTime,
+    EXPECT_WHEN(!AVAILABLE(event.start))
+    EXPECT_CONCEPT(event.start)
+    GRAMMAR_MAPPING("@(../RequestEventType)[EventTypeAgent.StartDateTime.DateTime]>:DateTime")
+)
+
+// /Calendar/PerformTask/PerformCreate/ExpectEndDateTime
+DEFINE_EXPECT_AGENT( CExpectEndDateTime,
+    EXPECT_WHEN(!AVAILABLE(event.end))
+    EXPECT_CONCEPT(event.end)
+    GRAMMAR_MAPPING("@(../RequestEventType)[EventTypeAgent.EndDateTime.DateTime]>:DateTime,"
+                    "@(../RequestStartDateTime)[StartDateTimeAgent.EndDateTime.DateTime]>:DateTime")
+)
+
+// /Calendar/PerformTask/PerformCreate/ExpectLocation
+DEFINE_EXPECT_AGENT( CExpectLocation,
+    EXPECT_WHEN(!AVAILABLE(event.location))
+    EXPECT_CONCEPT(event.location)
+    GRAMMAR_MAPPING("@(../RequestEventType)[EventTypeAgent.AtLocation.Location]>:Location")
+)
+
+// /Calendar/PerformTask/PerformCreate/ConfirmCreate
+DEFINE_INFORM_AGENT( CConfirmCreate,
+    PROMPT(":non-listening inform create_confirm <event")
+)
+
+// /Calendar/PerformTask/PerformCreate/ExecuteCreate
+DEFINE_EXECUTE_AGENT( CExecuteCreate,
+    EXECUTE(
+        pTrafficManager->Call(this, "gal_be.launch_query <task_type <event");
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/InformCreateDone
+DEFINE_INFORM_AGENT( CInformCreateDone,
+    PROMPT(":non-listening inform create_done <event")
+)
+
+//-----------------------------------------------------------------------------
+//
+// CREATE END, QUERY START
+//
+//-----------------------------------------------------------------------------
+
+///Calendar/PerformTask/PerformQuery
+DEFINE_AGENCY( CPerformQuery,
+    PRECONDITION((int)C("task_type") == TASK_QUERY)
+    DEFINE_CONCEPTS(
+        INT_USER_CONCEPT(query_type, "")
+        CUSTOM_SYSTEM_CONCEPT(event, CEventConcept)
+        CUSTOM_SYSTEM_CONCEPT(results, CArrayEventConcept)
+    )
+    ON_INITIALIZATION(
+        C("query_type").Clear();
+        C("event").Clear();
+        C("results").Clear();
+    )
+    DEFINE_SUBAGENTS(
+        SUBAGENT(RequestQueryType, CRequestQueryType, "")
+        SUBAGENT(HelpQueryType, CHelpQueryType, "")
+        SUBAGENT(ExpectEventType, CExpectEventType, "")
+        SUBAGENT(ExpectPeopleConstraint, CExpectPeopleConstraint, "")
+        SUBAGENT(ExpectDateConstraint, CExpectDateConstraint, "")
+        SUBAGENT(ExecuteQuery, CExecuteQuery, "")
+        SUBAGENT(InformQueryDone, CInformQueryDone, "")
+    )
+    SUCCEEDS_WHEN(
+        COMPLETED(InformQueryDone)
+    )
+)
+
+// /Calendar/PerformTask/PerformQuery/RequestQueryType
+DEFINE_REQUEST_AGENT( CRequestQueryType,
+    INPUT_LINE_CONFIGURATION("set_lm=Query")
+    PROMPT(":non-listening request query")
+    REQUEST_CONCEPT(query_type)
+    GRAMMAR_MAPPING(mysprintf("![QueryExpression.What]>%d, ![QueryExpression.Where]>%d, "
+                              "![QueryExpression.Who]>%d, ![QueryExpression.When]>%d, "
+                              "![Help]>0",
+                              QUERY_WHAT, QUERY_WHERE, QUERY_WHO, QUERY_WHEN))
+    MAX_ATTEMPTS(2)     // Fall into help if input can't be parsed
+    ON_COMPLETION(
+        if (!AVAILABLE(query_type)) C("event").Clear();
+    )
+)
+
+// /Calendar/PerformTask/PerformCreate/HelpQueryType
+DEFINE_INFORM_AGENT( CHelpQueryType,
+    PRECONDITION(!AVAILABLE(query_type) || (int)C("query_type") == 0)
+    PROMPT(":non-listening inform help_query")
+    ON_COMPLETION(
+        C("query_type").Clear();
+        C("event").Clear();
+        A("../RequestQueryType").ReOpenTopic();
+        ReOpenTopic();
+    )
+)
+
+// /Calendar/PerformTask/PerformQuery/ExpectEventType
+DEFINE_EXPECT_AGENT( CExpectEventType,
+    EXPECT_WHEN(!AVAILABLE(event.type))
+    EXPECT_CONCEPT(event.type)
+    GRAMMAR_MAPPING("@(../RequestQueryType)[EventType]")
+)
+
+// /Calendar/PerformTask/PerformQuery/CExpectPeopleConstraint
+DEFINE_EXPECT_AGENT( CExpectPeopleConstraint,
+    EXPECT_WHEN(!AVAILABLE(event.people))
+    EXPECT_CONCEPT(event.people)
+    GRAMMAR_MAPPING("@(../RequestQueryType)[People]")
+)
+
+// /Calendar/PerformTask/PerformQuery/CExpectDateConstraint
+DEFINE_EXPECT_AGENT( CExpectDateConstraint,
+    EXPECT_WHEN(!AVAILABLE(event.start.day))
+    EXPECT_CONCEPT(event.start.day)
+    GRAMMAR_MAPPING("@(../RequestQueryType) [DateTime]>:DateTime")
+    
+)
+
+// /Calendar/PerformTask/PerformQuery/ExecuteQuery
+DEFINE_EXECUTE_AGENT( CExecuteQuery,
+	//PRECONDITION(AVAILABLE(event.type))
+    EXECUTE(pTrafficManager->Call(this, "gal_be.launch_query <task_type <query_type <event >results");)
+)
+
+// /Calendar/PerformTask/PerformQuery/InformQueryDone
+DEFINE_INFORM_AGENT( CInformQueryDone,
+	//PRECONDITION(AVAILABLE(event.type))
+    PROMPT(":non-listening inform query_done <query_type <results")
+)
+
+//-----------------------------------------------------------------------------
+//
+// QUERY END, MODIFY START
+//
+//-----------------------------------------------------------------------------
+
+// /Calendar/PerformTask/PerformModify
+DEFINE_INFORM_AGENT( CPerformModify,
+    PRECONDITION((int)C("task_type") == TASK_MODIFY)
+    PROMPT(":non-listening inform modify")
+)
+
+//-----------------------------------------------------------------------------
+//
+// MODIFY END, DELETE START
+//
+//-----------------------------------------------------------------------------
+
+// /Calendar/PerformTask/PerformDelete
+DEFINE_INFORM_AGENT( CPerformDelete,
+    PRECONDITION((int)C("task_type") == TASK_DELETE)
+    PROMPT(":non-listening inform delete")
+)
+
+//-----------------------------------------------------------------------------
+//
+// DELETE END
+//
+//-----------------------------------------------------------------------------
+
+// /Calendar/PerformTask/RequestTaskTypeAgain
+DEFINE_REQUEST_AGENT( CRequestTaskTypeAgain,
+    INPUT_LINE_CONFIGURATION("set_lm=TaskType")
+    DEFINE_CONCEPTS(
+        INT_USER_CONCEPT(task_type_again, "")
+    )
+    PRECONDITION((int)C("task_type") != TASK_GOODBYE)
+    PROMPT(":non-listening request task_type_again")
+    REQUEST_CONCEPT_AFTER_CLEAR(task_type_again)
+    GRAMMAR_MAPPING("![Create]>1, ![Query]>2, ![Modify]>3, ![Delete]>4, ![Goodbye]>0")
+
+    ON_COMPLETION(
+        C("task_type") = (int)C("task_type_again");
+        if ((int)C("task_type") != TASK_GOODBYE) {
+            A("..").ReOpenTopic();
+        }
+    )
+)
+
+// /Calendar/GreetGoodbye
+DEFINE_INFORM_AGENT( CGreetGoodbye,
+    PROMPT(":non-listening inform goodbye")
+)
+
+//-----------------------------------------------------------------------------
+//
+// AGENTS SHARED BY MULTIPLE AGENCIES
+//
+//-----------------------------------------------------------------------------
+
+// DisambiguateGeneralDate
+DEFINE_EXECUTE_AGENT( CDisambiguateGeneralDate,
+    EXECUTE(
+        C("first_dt") = C((string)C("name_of_dt_to_validate"));
+        if ((int)C("first_dt.date_status") == DT_AMBIGUOUS) {
+            // Store the other choice of date in other_dt
+            int year = (int)C("first_dt.year");
+            int month = (int)C("first_dt.month");
+            int day = (int)C("first_dt.day");
+            dateInc(year, month, day, 7);
+            C("other_dt") = C("first_dt");  // This makes the concept "other_dt" available
+            C("other_dt.year") = year;
+            C("other_dt.month") = month;
+            C("other_dt.day") = day;
+        }
+        if ((int)C("first_dt.date_status") == DT_OKAY) {
+            C((string)C("name_of_dt_to_validate")) = C("first_dt");
+        }
+    )
+)
+
+// RequestNewDate
+DEFINE_REQUEST_AGENT( CRequestNewDate,
+    INPUT_LINE_CONFIGURATION("set_lm=DateOnly")
+    PRECONDITION((int)C("first_dt.date_status") != DT_OKAY)
+    DEFINE_CONCEPTS(
+        CUSTOM_USER_CONCEPT(temp_dt, CDateTimeConcept, "")
+    )
+    PROMPT(":non-listening request validate_date date_time<first_dt alternative<other_dt desc<desc_of_dt_to_validate");
+    REQUEST_CONCEPT_AFTER_CLEAR(temp_dt)
+    GRAMMAR_MAPPING("![DateTime]>:DateTime")
+    ON_COMPLETION(
+        if (!((int)C("temp_dt.date_status") == DT_MISSING)) {   // User does have chosen a date
+            if ((int)C("first_dt.date_status") == DT_AMBIGUOUS) {
+                int tempDay = (int)C("temp_dt.day");
+                int day1 = (int)C("first_dt.day");
+                int day2 = (int)C("other_dt.day");
+                if (tempDay == day1) {          // User chooses first date
+                    C("first_dt.date_status") = DT_OKAY;
+                }
+                else if (tempDay == day2) {     // User chooses second date
+                    C("first_dt.year") = (int)C("other_dt.year");
+                    C("first_dt.month") = (int)C("other_dt.month");
+                    C("first_dt.day") = (int)C("other_dt.day");
+                    C("first_dt.date_status") = DT_OKAY;
+                }
+                // Do not accept other dates
+            }
+            else {  // Accept whatever was given
+                C("first_dt.year") = C("temp_dt.year");
+                C("first_dt.month") = C("temp_dt.month");
+                C("first_dt.day") = C("temp_dt.day");
+                C("first_dt.date_status") = C("temp_dt.date_status");
+            }
+        }
+        C((string)C("name_of_dt_to_validate")) = C("first_dt");
+        if ((int)C("first_dt.date_status") != DT_OKAY) {
+            A("..").ReOpenTopic();
+        }
+    )
+)
+
+// DisambiguateGeneralTime
+DEFINE_EXECUTE_AGENT( CDisambiguateGeneralTime,
+    EXECUTE(
+        C("first_dt") = C((string)C("name_of_dt_to_validate"));
+        if ((int)C("first_dt.time_status") == DT_AMBIGUOUS) {
+            if ((int)C("first_dt.hour") < 6) {           // Disambiguate now: assume PM
+                C("first_dt.hour") = (int)C("first_dt.hour") + 12;
+                C("first_dt.time_status") = DT_OKAY;
+            }
+            else {                                              // Ask for new time
+                C("other_dt") = C("first_dt");    // This makes the concept "other_dt" available
+                C("other_dt.hour") = (int)C("first_dt.hour") + 12;
+            }
+        }
+        if ((int)C("first_dt.time_status") == DT_OKAY) {
+            C((string)C("name_of_dt_to_validate")) = C("first_dt");
+        }
+    )
+)
+
+// RequestNewTime
+DEFINE_REQUEST_AGENT( CRequestNewTime,
+    INPUT_LINE_CONFIGURATION("set_lm=TimeOnly")
+    PRECONDITION((int)C("first_dt.time_status") != DT_OKAY)
+    DEFINE_CONCEPTS(
+        CUSTOM_USER_CONCEPT(temp_dt, CDateTimeConcept, "")
+    )
+    PROMPT(":non-listening request validate_time date_time<first_dt alternative<other_dt desc<desc_of_dt_to_validate");
+    REQUEST_CONCEPT_AFTER_CLEAR(temp_dt)
+    GRAMMAR_MAPPING("![DateTime]>:DateTime")
+    ON_COMPLETION(
+        if ((int)C("first_dt.time_status") == DT_AMBIGUOUS) {
+            // Only accept input in the form of "AM" or "PM"
+            if ((int)C("temp_dt.period_of_day") == PoD_AM) {
+                C("first_dt.time_status") = DT_OKAY;
+            }
+            else if ((int)C("temp_dt.period_of_day") == PoD_PM) {
+                C("first_dt.hour") = (int)C("other_dt.hour");
+                C("first_dt.time_status") = DT_OKAY;
+            }
+        }
+        else {
+            int first_status = (int)C("first_dt.time_status");
+            int first_period = (int)C("first_dt.period_of_day");
+            int temp_status = (int)C("temp_dt.time_status");
+            int temp_period = (int)C("temp_dt.period_of_day");
+            // If first_dt was missing a time but has a PoD, and temp_dt has no PoD (no matter whether it has hour and minute or not), offer first_dt.PoD to temp_dt
+            //   If temp_dt.hour becomes inconsistent with first_dt.period, disregard first_dt.period and keep temp_dt ambiguous
+            if ((first_status == DT_MISSING) && (first_period != PoD_NONE) && (temp_period == PoD_NONE)) {
+                if (temp_status == DT_MISSING) {
+                    C("temp_dt.period_of_day") = first_period;
+                }
+                if (temp_status == DT_AMBIGUOUS) {
+                    int hour = (int)C("temp_dt.hour");
+                    bool ambiguous = false;
+                    if (first_period == PoD_MORNING || first_period == PoD_AM) {}
+                    if (first_period == PoD_NOON) {if (hour < 3) hour += 12; else if (hour < 10) ambiguous = true;}
+                    if (first_period == PoD_AFTERNOON || first_period == PoD_PM) hour += 12;
+                    if (first_period == PoD_EVENING) {if (hour < 4) ambiguous = true; else hour += 12;}
+                    if (first_period == PoD_NIGHT) {if (hour >= 6) hour += 12;}
+                    if (!ambiguous) {
+                        C("temp_dt.hour") = hour;
+                        C("temp_dt.time_status") = DT_OKAY;
+                    }
+                }
+            }
+            C("first_dt.hour") = C("temp_dt.hour");
+            C("first_dt.minute") = C("temp_dt.minute");
+            C("first_dt.period_of_day") = C("temp_dt.period_of_day");
+            C("first_dt.time_status") = C("temp_dt.time_status");
+        }
+        C((string)C("name_of_dt_to_validate")) = C("first_dt");
+        if ((int)C("first_dt.time_status") != DT_OKAY) {
+            A("..").ReOpenTopic();
+        }
+    )
+)
+
+//-----------------------------------------------------------------------------
+//
+// AGENT DECLARATIONS
+//
+//-----------------------------------------------------------------------------
+DECLARE_AGENTS(
+    DECLARE_AGENT(CCalendar)
+        DECLARE_AGENT(CGreetWelcome)
+        DECLARE_AGENT(CPerformTask)
+            DECLARE_AGENT(CRequestTaskType)
+            DECLARE_AGENT(CPerformCreate)
+                DECLARE_AGENT(CRequestEventType)
+                DECLARE_AGENT(CHelpEventType)
+                DECLARE_AGENT(CRequestPeople)
+                DECLARE_AGENT(CRequestStartDateTime)
+                DECLARE_AGENT(CValidateStartDate)
+                    DECLARE_AGENT(CDisambiguateStartDate)
+                DECLARE_AGENT(CValidateStartTime)
+                    DECLARE_AGENT(CDisambiguateStartTime)
+                DECLARE_AGENT(CRequestEndDateTime)
+                DECLARE_AGENT(CValidateEndDate)
+                    DECLARE_AGENT(CDisambiguateEndDate)
+                    DECLARE_AGENT(CCheckDateOrder)
+                DECLARE_AGENT(CValidateEndTime)
+                    DECLARE_AGENT(CDisambiguateEndTime)
+                    DECLARE_AGENT(CCheckTimeOrder)
+                DECLARE_AGENT(CRequestLocation)
+                DECLARE_AGENT(CRequestDoorNumber)
+                DECLARE_AGENT(CExpectPeople)
+                DECLARE_AGENT(CExpectStartDateTime)
+                DECLARE_AGENT(CExpectEndDateTime)
+                DECLARE_AGENT(CExpectLocation)
+                DECLARE_AGENT(CConfirmCreate)
+                DECLARE_AGENT(CExecuteCreate)
+                DECLARE_AGENT(CInformCreateDone)
+            DECLARE_AGENT(CPerformQuery)
+            	DECLARE_AGENT(CRequestQueryType)
+            	DECLARE_AGENT(CHelpQueryType)
+            	DECLARE_AGENT(CExpectEventType)
+            	DECLARE_AGENT(CExpectPeopleConstraint)
+            	DECLARE_AGENT(CExpectDateConstraint)
+                DECLARE_AGENT(CExecuteQuery)
+                DECLARE_AGENT(CInformQueryDone)
+            DECLARE_AGENT(CPerformModify)
+            DECLARE_AGENT(CPerformDelete)
+            DECLARE_AGENT(CRequestTaskTypeAgain)
+        DECLARE_AGENT(CGreetGoodbye)
+// AGENTS SHARED BY MULTIPLE AGENCIES
+    DECLARE_AGENT(CDisambiguateGeneralDate)
+    DECLARE_AGENT(CRequestNewDate)
+    DECLARE_AGENT(CDisambiguateGeneralTime)
+    DECLARE_AGENT(CRequestNewTime)
+)
+
+//-----------------------------------------------------------------------------
+// DIALOG TASK ROOT DECLARATION
+//-----------------------------------------------------------------------------
+DECLARE_DIALOG_TASK_ROOT(Calendar, CCalendar, "")

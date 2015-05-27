@@ -1,0 +1,17 @@
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\GlobalData.exe.config
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\obj\Debug\GlobalData.csprojResolveAssemblyReference.cache
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\GlobalData.exe
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\GlobalData.pdb
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\Apache.NMS.pdb
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\Apache.NMS.ActiveMQ.pdb
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\vhmsg-net.pdb
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\vhmsg-net.xml
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\obj\Debug\GlobalData.exe
+c:\users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\obj\Debug\GlobalData.pdb
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\GlobalData\GlobalData\obj\Debug\GlobalData.csproj.GenerateResource.Cache
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\obj\Debug\vrGlobalData.Interface.resources
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\Apache.NMS.ActiveMQ.dll
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\Apache.NMS.dll
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\Ionic.Zlib.dll
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Debug\vhmsg-net.dll
+C:\Users\apapa\Documents\Visual Studio 2013\Projects\GlobalData\GlobalData\obj\Debug\vrGlobalData.WozInterface.resources

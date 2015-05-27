@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Middleware</string>
+    <string name="title_activity_news_adapter">NewsAdapterActivity</string>
+
+</resources>

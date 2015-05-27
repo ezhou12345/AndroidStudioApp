@@ -1,0 +1,9 @@
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\bin\Release\GlobalData.exe.config
+D:\vhtoolkit\bin\globaldata\bin\Release\GlobalData.exe.config
+D:\vhtoolkit\bin\globaldata\bin\Release\GlobalData.exe
+D:\vhtoolkit\bin\globaldata\bin\Release\GlobalData.pdb
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\obj\Release\vrGlobalData.Interface.resources
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\obj\Release\GlobalData.csproj.GenerateResource.Cache
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\obj\Release\GlobalData.exe
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\obj\Release\GlobalData.pdb
+C:\Users\apapa\documents\visual studio 2013\Projects\GlobalData\GlobalData\obj\Release\GlobalData.csprojResolveAssemblyReference.cache
